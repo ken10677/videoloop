@@ -14,7 +14,8 @@ find_video() {
 
 sync_videos() {
     echo "[$(date)] Syncing from Google Drive..."
-    rclone sync gdrive:VideoLoop "$VIDEO_DIR" --verbose 2>&1
+    # --delete-before removes local files not in Drive before downloading
+    rclone sync gdrive:VideoLoop "$VIDEO_DIR" --delete-before --verbose 2>&1
     echo "[$(date)] Sync complete"
 }
 
