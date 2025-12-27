@@ -1,0 +1,12 @@
+# Video files (don't commit large media)
+*.mp4
+*.mkv
+*.avi
+*.mov
+*.webm
+*.m4v
+*.wmv
+*.flv
+
+# Local config
+rclone.conf
