@@ -36,7 +36,7 @@ while true; do
     echo "[$(date)] Playing: $VIDEO"
 
     # Start VLC in fullscreen, no audio, looping
-    cvlc --no-audio --loop --fullscreen --no-video-title-show --no-osd "$VIDEO" &
+    DISPLAY=:0 cvlc --no-audio --loop --fullscreen --no-video-title-show --no-osd "$VIDEO" &
     VLC_PID=$!
     START_TIME=$(date +%s)
 
