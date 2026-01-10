@@ -4,7 +4,6 @@
 
 VIDEO_DIR="/home/ken/videoloop/videos"
 SYNC_INTERVAL=1800  # 30 minutes in seconds
-LAST_VIDEO=""
 
 mkdir -p "$VIDEO_DIR"
 
@@ -31,31 +30,38 @@ while true; do
         continue
     fi
 
-    LAST_VIDEO="$VIDEO"
     echo "[$(date)] Playing: $VIDEO"
 
     # Start VLC in fullscreen, no audio, looping
     DISPLAY=:0 cvlc --no-audio --loop --fullscreen --no-video-title-show --no-osd "$VIDEO" &
     VLC_PID=$!
-    START_TIME=$(date +%s)
+    LAST_SYNC=$(date +%s)
 
-    # Monitor playback and sync periodically
+    # Monitor playback, check for new videos every minute, sync every 30 min
     while kill -0 $VLC_PID 2>/dev/null; do
         sleep 60
-        CURRENT_TIME=$(date +%s)
-        ELAPSED=$((CURRENT_TIME - START_TIME))
 
+        # Check if current video still exists (rclone may have removed it)
+        if [ ! -f "$VIDEO" ]; then
+            echo "[$(date)] Current video was removed, switching..."
+            kill $VLC_PID 2>/dev/null
+            break
+        fi
+
+        # Check if a different video is now available
+        NEW_VIDEO=$(find_video)
+        if [ -n "$NEW_VIDEO" ] && [ "$NEW_VIDEO" != "$VIDEO" ]; then
+            echo "[$(date)] New video detected: $NEW_VIDEO"
+            kill $VLC_PID 2>/dev/null
+            break
+        fi
+
+        # Sync from Drive every 30 minutes
+        CURRENT_TIME=$(date +%s)
+        ELAPSED=$((CURRENT_TIME - LAST_SYNC))
         if [ $ELAPSED -ge $SYNC_INTERVAL ]; then
             sync_videos
-            NEW_VIDEO=$(find_video)
-
-            # If a new video is available, stop current and switch
-            if [ -n "$NEW_VIDEO" ] && [ "$NEW_VIDEO" != "$LAST_VIDEO" ]; then
-                echo "[$(date)] New video detected: $NEW_VIDEO"
-                kill $VLC_PID 2>/dev/null
-                sleep 2
-            fi
-            START_TIME=$(date +%s)
+            LAST_SYNC=$(date +%s)
         fi
     done
 
