@@ -3,7 +3,7 @@
 # Designed for Raspberry Pi with HDMI display
 
 VIDEO_DIR="/home/ken/videoloop/videos"
-SYNC_INTERVAL=1800  # 30 minutes in seconds
+SYNC_INTERVAL=60  # 1 minute in seconds
 
 mkdir -p "$VIDEO_DIR"
 
